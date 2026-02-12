@@ -7,7 +7,5 @@ model Review {
   student   User   @relation(fields: [studentId], references: [id])
 
   tutorProfileId String
-  tutorProfile   TutorProfile @relation("TutorReviews", fields: [tutorProfileId], references: [id]) 
-
-  createdAt DateTime @default(now())
+  tutorProfile   TutorProfile @relation(fields: [tutorProfileId], references: [id])
 }
