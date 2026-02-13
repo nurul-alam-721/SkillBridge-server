@@ -19,6 +19,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 app.get("/", (req, res) => {
     res.send("Hello from SkillBridge!");
 });
-app.use(notFound)
+
+app.use(notFound);
 
 export default app;
