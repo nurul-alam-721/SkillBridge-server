@@ -16,23 +16,13 @@ const createProfile = async (req: Request, res: Response) => {
 const updateProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
-    const profile = await TutorService.updaeProfile(userId as string, req.body);
+    const profile = await TutorService.updateProfile(userId as string, req.body);
     res.status(200).json(profile);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// Get Current Tutor Profile
-const getMyProfile = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    const profile = await TutorService.getProfileByUserId(userId as string);
-    res.status(200).json(profile);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
-};
 
 // Get All Tutors
 const getAllTutors = async (req: Request, res: Response) => {
@@ -59,7 +49,6 @@ const getTutorById = async (req: Request, res: Response) => {
 export const TutorController = {
   createProfile,
   updateProfile,
-  getMyProfile,
   getAllTutors,
   getTutorById,
 };  

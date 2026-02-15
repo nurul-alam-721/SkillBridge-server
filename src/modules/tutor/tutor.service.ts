@@ -51,18 +51,6 @@ const updateProfile = async (userId: string, data: Partial<TutorProfileData>) =>
 };
 
 
-// Get Tutor Profile by userId
-const getProfileByUserId = async (userId: string) => {
-  return prisma.tutorProfile.findUnique({
-    where: { userId },
-    include: {
-      user: true,
-      category: true,
-      availability: true,
-      reviews: true,
-    },
-  });
-};
 
 // Get all tutors with optional category filter
 const getAllTutors = async (categoryId?: string) => {
@@ -95,7 +83,6 @@ const getTutorById = async (tutorId: string) => {
 export const TutorService = {
   createProfile,
   updateProfile,
-  getProfileByUserId,
   getAllTutors,
   getTutorById,
 };

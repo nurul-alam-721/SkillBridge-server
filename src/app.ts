@@ -5,7 +5,8 @@ import cors from 'cors';
 import { notFound } from "./middlewares/notFound";
 import { tutorRoutes } from "./modules/tutor/tutor.router";
 import { adminRoutes } from "./modules/admin/admin.router";
-import { errorHandler } from "./middlewares/globalErrorHandler";
+import errorHandler from "./middlewares/globalErrorHandler";
+import { authRoutes } from "./modules/auth/auth.router";
 
 const app: Application = express();
 
@@ -16,7 +17,8 @@ app.use(cors({
 
 app.use(express.json());
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.use("/api/auth", authRoutes)
 
 app.use("/api/tutors", tutorRoutes)
 
@@ -25,6 +27,8 @@ app.use("/api/admin", adminRoutes)
 app.get("/", (req, res) => {
     res.send("Hello from SkillBridge!");
 });
+
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use(notFound);
 
