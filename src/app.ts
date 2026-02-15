@@ -5,6 +5,7 @@ import cors from 'cors';
 import { notFound } from "./middlewares/notFound";
 import { tutorRoutes } from "./modules/tutor/tutor.router";
 import { adminRoutes } from "./modules/admin/admin.router";
+import { errorHandler } from "./middlewares/globalErrorHandler";
 
 const app: Application = express();
 
@@ -26,5 +27,7 @@ app.get("/", (req, res) => {
 });
 
 app.use(notFound);
+
+app.use(errorHandler);
 
 export default app;
