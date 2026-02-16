@@ -41,8 +41,8 @@ const getAllCategories = async (req: Request, res: Response, next: NextFunction)
 
 const createCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name } = req.body;
-    const category = await AdminService.createCategory(name);
+    const { name, description } = req.body;
+    const category = await AdminService.createCategory(name, description);
     res.status(201).json(category);
   } catch (err) {
     next(err);
@@ -52,8 +52,8 @@ const createCategory = async (req: Request, res: Response, next: NextFunction) =
 const updateCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
-    const category = await AdminService.updateCategory(id as string, name);
+    const { name, description } = req.body;
+    const category = await AdminService.updateCategory(id as string, name, description);
     res.json(category);
   } catch (err) {
     next(err);

@@ -25,20 +25,32 @@ const getAllBookings = async () => {
   });
 };
 
+const createCategory = async (name: string, description?: string) => {
+  return prisma.category.create({
+    data: {
+      name,
+      description: description || null,
+    },
+  });
+};
+
+
 const getAllCategories = async () => {
   return prisma.category.findMany();
 };
 
-const createCategory = async (name: string) => {
-  return prisma.category.create({ data: { name } });
-};
 
-const updateCategory = async (id: string, name: string) => {
+
+const updateCategory = async (id: string, name: string, description?: string) => {
   return prisma.category.update({
     where: { id },
-    data: { name },
+    data: {
+      name,
+      ...(description !== undefined && { description }) 
+    },
   });
 };
+
 
 const deleteCategory = async (id: string) => {
   return prisma.category.delete({ where: { id } });
