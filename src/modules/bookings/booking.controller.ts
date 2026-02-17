@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { BookingStatus } from "@prisma/client";
-import { BookingService } from "./booking.service";
+import { autoCompleteBookings, BookingService } from "./booking.service";
+import { ApiError } from "../../middlewares/globalErrorHandler";
+import { prisma } from "../../lib/prisma";
+import httpStatus from "http-status";
 
 // Student creates booking
 const createBooking = async (
@@ -47,30 +49,57 @@ const getMyBookings = async (
   }
 };
 
-// Tutor updates booking status
-const updateBookingStatusByTutor = async (
+
+export const updateBookingStatusByTutor = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    const userId = req.user?.id as string;
+    const { id: bookingId } = req.params;
     const { status } = req.body;
 
+    const tutorProfile = await prisma.tutorProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!tutorProfile) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Tutor profile not found");
+    }
+
     const booking = await BookingService.updateBookingStatusByTutor(
-      id as string,
-      status as BookingStatus,
+      bookingId as string,
+      tutorProfile.id,
+      status
     );
 
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
       success: true,
-      message: "Booking status updated successfully!",
+      message: "Booking status updated successfully",
       data: booking,
     });
   } catch (error) {
     next(error);
   }
 };
+export const autoCompleteBookingStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const updated = await autoCompleteBookings();
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Bookings auto-completed successfully",
+      data: updated,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // Get single booking
 const getBookingById = async (

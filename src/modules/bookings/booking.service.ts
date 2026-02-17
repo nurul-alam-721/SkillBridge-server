@@ -63,61 +63,84 @@ const getMyBookings = async (userId: string, role: "STUDENT" | "TUTOR") => {
 
 export const updateBookingStatusByTutor = async (
   bookingId: string,
+  tutorProfileId: string,
   status: BookingStatus
 ) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: { slot: true },
+    include: { slot: true, tutorProfile: true },
   });
 
-  if (!booking) throw new ApiError(404, "Booking not found");
+  if (!booking) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Booking not found");
+  }
 
+  if (booking.tutorProfileId !== tutorProfileId) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You are not allowed to update this booking");
+  }
+
+  const now = new Date();
   const currentStatus = booking.status;
+
+  if (
+    currentStatus === BookingStatus.COMPLETED ||
+    currentStatus === BookingStatus.CANCELLED
+  ) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Booking status can no longer be changed");
+  }
+
+  // ❌ Tutor cannot cancel after session ended
+  if (
+    status === BookingStatus.CANCELLED &&
+    booking.slot.endTime <= now
+  ) {
+    throw new ApiError(
+      400,
+      "Cannot cancel a booking after the session has ended"
+    );
+  }
 
   const allowedTransitions: Record<BookingStatus, BookingStatus[]> = {
     PENDING: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
     CONFIRMED: [BookingStatus.COMPLETED, BookingStatus.CANCELLED],
-    COMPLETED: [], 
-    CANCELLED: [], 
+    COMPLETED: [],
+    CANCELLED: [],
   };
 
   if (!allowedTransitions[currentStatus].includes(status)) {
     throw new ApiError(
       403,
-      `Cannot change booking from ${currentStatus} to ${status}`
+      `Invalid status transition from ${currentStatus} to ${status}`
     );
   }
 
-  const updated = await prisma.booking.update({
+  return prisma.booking.update({
     where: { id: bookingId },
     data: { status },
   });
-
-  return updated;
 };
+
 
 export const autoCompleteBookings = async () => {
   const now = new Date();
 
-  const bookingsToComplete = await prisma.booking.findMany({
+  const bookings = await prisma.booking.findMany({
     where: {
       status: BookingStatus.CONFIRMED,
-      slot: { endTime: { lt: now } },
+      slot: {
+        endTime: { lt: now },
+      },
     },
-    include: { slot: true },
   });
 
-  const completedBookings = [];
-
-  for (const booking of bookingsToComplete) {
-    const updated = await prisma.booking.update({
+  const updates = bookings.map((booking) =>
+    prisma.booking.update({
       where: { id: booking.id },
       data: { status: BookingStatus.COMPLETED },
-    });
-    completedBookings.push(updated);
-  }
+    })
+  );
 
-  return completedBookings;
+  return Promise.all(updates);
 };
 
 

@@ -1,13 +1,10 @@
-
 model AvailabilitySlot {
-  id             String        @id @default(uuid())
+  id             String       @id @default(uuid())
   tutorProfileId String
-  tutorProfile   TutorProfile  @relation("TutorAvailability", fields: [tutorProfileId], references: [id])
-
-  date      DateTime
-  startTime DateTime
-  endTime   DateTime
-  isBooked  Boolean @default(false)
-
-  bookings Booking[] @relation("SlotBookings")
+  date           DateTime
+  startTime      DateTime
+  endTime        DateTime
+  isBooked       Boolean      @default(false)
+  tutorProfile   TutorProfile @relation("TutorAvailability", fields: [tutorProfileId], references: [id])
+  bookings       Booking[]    @relation("SlotBookings")
 }

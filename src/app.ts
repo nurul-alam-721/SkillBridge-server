@@ -10,6 +10,7 @@ import { authRoutes } from "./modules/auth/auth.route";
 import { categoryRoutes } from "./modules/categories/category.route";
 import { AvailabilityRoutes } from "./modules/availabilitySlot/availability.route";
 import { bookingRoutes } from "./modules/bookings/booking.route";
+import { reviewRoutes } from "./modules/reviews/review.route";
 
 const app: Application = express();
 
@@ -31,6 +32,8 @@ app.use("/api/tutors", tutorRoutes)
 app.use("/api", AvailabilityRoutes);
 
 app.use("/api/bookings", bookingRoutes);
+
+app.use("/api/reviews", reviewRoutes);
 
     
 app.get("/", (req, res) => {

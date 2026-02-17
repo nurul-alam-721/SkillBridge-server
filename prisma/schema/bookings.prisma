@@ -1,20 +1,19 @@
 model Booking {
   id             String           @id @default(uuid())
   studentId      String
-  student        User             @relation("StudentBookings", fields: [studentId], references: [id])
   tutorProfileId String
-  tutorProfile   TutorProfile     @relation("TutorBookings", fields: [tutorProfileId], references: [id])
   slotId         String
-  slot           AvailabilitySlot @relation("SlotBookings", fields: [slotId], references: [id])
   status         BookingStatus    @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  slot           AvailabilitySlot @relation("SlotBookings", fields: [slotId], references: [id])
+  student        User             @relation("StudentBookings", fields: [studentId], references: [id])
+  tutorProfile   TutorProfile     @relation("TutorBookings", fields: [tutorProfileId], references: [id])
 }
 
 enum BookingStatus {
-  PENDING
   CONFIRMED
   COMPLETED
   CANCELLED
+  PENDING
 }
