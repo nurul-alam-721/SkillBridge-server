@@ -3,10 +3,13 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import cors from 'cors';
 import { notFound } from "./middlewares/notFound";
-import { tutorRoutes } from "./modules/tutor/tutor.router";
-import { adminRoutes } from "./modules/admin/admin.router";
+import { tutorRoutes } from "./modules/tutor/tutor.route";
+import { adminRoutes } from "./modules/admin/admin.route";
 import errorHandler from "./middlewares/globalErrorHandler";
-import { authRoutes } from "./modules/auth/auth.router";
+import { authRoutes } from "./modules/auth/auth.route";
+import { categoryRoutes } from "./modules/categories/category.route";
+import { AvailabilityRoutes } from "./modules/availabilitySlot/availability.route";
+import { bookingRoutes } from "./modules/bookings/booking.route";
 
 const app: Application = express();
 
@@ -21,9 +24,15 @@ app.use("/api/admin", adminRoutes)
 
 app.use("/api/auth", authRoutes)
 
+app.use("/api/categories", categoryRoutes)
+
 app.use("/api/tutors", tutorRoutes)
 
+app.use("/api", AvailabilityRoutes);
 
+app.use("/api/bookings", bookingRoutes);
+
+    
 app.get("/", (req, res) => {
     res.send("Hello from SkillBridge!");
 });

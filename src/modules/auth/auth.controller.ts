@@ -13,7 +13,11 @@ const getCurrentUser = async (req: Request, res: Response, next: NextFunction) =
       throw { status: 404, message: "User not found" };
     }
 
-    res.status(200).json(user);
+     res.status(200).json({
+          success: true,
+          message: "Current user fetched successfully",
+          data: user,
+        });
   } catch (error) {
     next(error);
   }

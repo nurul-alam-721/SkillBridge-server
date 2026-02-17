@@ -1,7 +1,7 @@
 model Review {
   id             String       @id @default(uuid())
   rating         Int
-  comment        String
+  comment        String?
   studentId      String
   student        User         @relation(fields: [studentId], references: [id])
   tutorProfileId String

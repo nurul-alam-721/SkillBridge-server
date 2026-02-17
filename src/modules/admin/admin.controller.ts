@@ -4,7 +4,11 @@ import { AdminService } from "./admin.service";
 const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await AdminService.getAllUsers();
-    res.json(users);
+    res.status(200).json({
+      success: true,
+      message: "Users fetched successfully!",
+      data: users
+    });
   } catch (err) {
     next(err);
   }
@@ -15,7 +19,11 @@ const updateUserStatus = async (req: Request, res: Response, next: NextFunction)
     const { id } = req.params;
     const { status } = req.body;
     const user = await AdminService.updateUserStatus(id as string, status);
-    res.json(user);
+   res.status(201).json({
+      success: true,
+      message: "User status updated successfully!",
+      data: user,
+    });
   } catch (err) {
     next(err);
   }
@@ -24,58 +32,19 @@ const updateUserStatus = async (req: Request, res: Response, next: NextFunction)
 const getAllBookings = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bookings = await AdminService.getAllBookings();
-    res.json(bookings);
+    res.status(200).json({
+      success: true,
+      message: "Bookings fetched successfully!",
+      data: bookings
+    });
   } catch (err) {
     next(err);
   }
 };
 
-const getAllCategories = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const categories = await AdminService.getAllCategories();
-    res.json(categories);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const createCategory = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { name, description } = req.body;
-    const category = await AdminService.createCategory(name, description);
-    res.status(201).json(category);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const updateCategory = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const { name, description } = req.body;
-    const category = await AdminService.updateCategory(id as string, name, description);
-    res.json(category);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    await AdminService.deleteCategory(id as string);
-    res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
-};
 
 export const AdminController = {
   getAllUsers,
   updateUserStatus,
   getAllBookings,
-  getAllCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
 };

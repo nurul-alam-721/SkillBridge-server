@@ -1,21 +1,23 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../middlewares/globalErrorHandler";
 
-interface TutorProfileData {
-  bio: string;
+export interface TutorProfileData {
+  bio?: string;        
   hourlyRate: number;
   experience: number;
   categoryId: string;
 }
 
-// Create Tutor Profile
 const createProfile = async (userId: string, data: TutorProfileData) => {
+  if (!userId) throw new Error("User not logged in");
+
   const existing = await prisma.tutorProfile.findUnique({ where: { userId } });
-  if (existing) throw new Error("Profile already exists");
+if (existing) throw new ApiError(400, "Profile already exists");
 
   return prisma.tutorProfile.create({
     data: {
       userId,
-      bio: data.bio,
+      bio: data.bio || "No bio provided",
       hourlyRate: data.hourlyRate,
       experience: data.experience,
       categoryId: data.categoryId,
@@ -29,10 +31,10 @@ const createProfile = async (userId: string, data: TutorProfileData) => {
   });
 };
 
-// Update Tutor Profile
 const updateProfile = async (userId: string, data: Partial<TutorProfileData>) => {
-  const updateData: any = {};
+  if (!userId) throw new Error("User not logged in");
 
+  const updateData: any = {};
   if (data.bio !== undefined) updateData.bio = data.bio;
   if (data.hourlyRate !== undefined) updateData.hourlyRate = data.hourlyRate;
   if (data.experience !== undefined) updateData.experience = data.experience;
@@ -50,9 +52,6 @@ const updateProfile = async (userId: string, data: Partial<TutorProfileData>) =>
   });
 };
 
-
-
-// Get all tutors with optional category filter
 const getAllTutors = async (categoryId?: string) => {
   const where = categoryId ? { categoryId } : {};
   return prisma.tutorProfile.findMany({
@@ -66,8 +65,6 @@ const getAllTutors = async (categoryId?: string) => {
   });
 };
 
-
-// Get single tutor by tutorProfileId
 const getTutorById = async (tutorId: string) => {
   return prisma.tutorProfile.findUnique({
     where: { id: tutorId },

@@ -25,43 +25,10 @@ const getAllBookings = async () => {
   });
 };
 
-const createCategory = async (name: string, description?: string) => {
-  return prisma.category.create({
-    data: {
-      name,
-      description: description || null,
-    },
-  });
-};
 
-
-const getAllCategories = async () => {
-  return prisma.category.findMany();
-};
-
-
-
-const updateCategory = async (id: string, name: string, description?: string) => {
-  return prisma.category.update({
-    where: { id },
-    data: {
-      name,
-      ...(description !== undefined && { description }) 
-    },
-  });
-};
-
-
-const deleteCategory = async (id: string) => {
-  return prisma.category.delete({ where: { id } });
-};
 
 export const AdminService = {
   getAllUsers,
   updateUserStatus,
   getAllBookings,
-  getAllCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
 };

@@ -2,7 +2,7 @@ model TutorProfile {
   id           String    @id @default(uuid())
   userId       String    @unique
   user         User      @relation(fields: [userId], references: [id])
-  bio          String
+  bio          String?
   hourlyRate   Float
   experience   Int
   categoryId   String

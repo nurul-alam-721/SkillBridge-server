@@ -1,87 +1,67 @@
 import { NextFunction, Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 
-function errorHandler(
+export class ApiError extends Error {
+  statusCode: number;
+
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+const errorHandler = (
   err: any,
   req: Request,
   res: Response,
   next: NextFunction
-) {
+) => {
   let statusCode = 500;
   let message = "Internal Server Error";
-  let error = err;
+  let error: any = undefined;
 
-
-
+  // Prisma validation errors
   if (err instanceof Prisma.PrismaClientValidationError) {
     statusCode = 400;
     message = "Invalid or missing fields in request";
+    error = err.message;
   }
 
+  // Prisma known errors
   else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    switch (err.code) {
-      case "P2025":
-        statusCode = 404;
-        message = "Requested resource not found";
-        break;
+    statusCode = 400;
+    message = "Database request error";
 
-      case "P2002":
-        statusCode = 409;
-        message = "Duplicate record already exists";
-        break;
+    if (err.code === "P2025") message = "Record not found";
+    if (err.code === "P2002") message = "Duplicate key error";
+    if (err.code === "P2003") message = "Foreign key constraint failed";
 
-      case "P2003":
-        statusCode = 400;
-        message = "Invalid relation or foreign key";
-        break;
-
-      default:
-        statusCode = 400;
-        message = "Database request failed";
-    }
+    error = {
+      code: err.code,
+      meta: err.meta,
+    };
   }
 
-  else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
-    statusCode = 500;
-    message = "Unknown database error occurred";
-  }
-
-  else if (err instanceof Prisma.PrismaClientInitializationError) {
-    if (err.errorCode === "P1000") {
-      statusCode = 401;
-      message = "Database authentication failed";
-    } else if (err.errorCode === "P1001") {
-      statusCode = 503;
-      message = "Database server unreachable";
-    }
-  }
-
-
-
-  else if (err.name === "JsonWebTokenError") {
-    statusCode = 401;
-    message = "Invalid authentication token";
-  }
-
-  else if (err.name === "TokenExpiredError") {
-    statusCode = 401;
-    message = "Authentication token expired";
-  }
-
-
-
-  else if (err.status && err.message) {
-    statusCode = err.status;
+  // Custom API errors
+  else if (err instanceof ApiError) {
+    statusCode = err.statusCode;
     message = err.message;
   }
 
- 
+  // Generic errors
+  else if (err instanceof Error) {
+    message = err.message || message;
+    if (process.env.NODE_ENV !== "production") {
+      error = err.stack;
+    }
+  }
 
   res.status(statusCode).json({
     success: false,
     message,
     error,
   });
-}
+};
 
 export default errorHandler;
