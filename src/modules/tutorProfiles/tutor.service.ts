@@ -8,7 +8,7 @@ export interface TutorProfileData {
   categoryId: string;
 }
 
-const createProfile = async (userId: string, data: TutorProfileData) => {
+const createTutorProfile = async (userId: string, data: TutorProfileData) => {
   if (!userId) throw new Error("User not logged in");
 
   const existing = await prisma.tutorProfile.findUnique({ where: { userId } });
@@ -31,7 +31,7 @@ if (existing) throw new ApiError(400, "Profile already exists");
   });
 };
 
-const updateProfile = async (userId: string, data: Partial<TutorProfileData>) => {
+const updateTutorProfile = async (userId: string, data: Partial<TutorProfileData>) => {
   if (!userId) throw new Error("User not logged in");
 
   const updateData: any = {};
@@ -78,8 +78,8 @@ const getTutorById = async (tutorId: string) => {
 };
 
 export const TutorService = {
-  createProfile,
-  updateProfile,
+  createTutorProfile,
+  updateTutorProfile,
   getAllTutors,
   getTutorById,
 };

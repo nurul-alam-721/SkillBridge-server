@@ -3,6 +3,7 @@ import { autoCompleteBookings, BookingService } from "./booking.service";
 import { ApiError } from "../../middlewares/globalErrorHandler";
 import { prisma } from "../../lib/prisma";
 import httpStatus from "http-status";
+import { get } from "node:http";
 
 // Student creates booking
 const createBooking = async (
@@ -21,6 +22,19 @@ const createBooking = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+const getAllBookings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const bookings = await BookingService.getAllBookings();
+    res.status(200).json({
+      success: true,
+      message: "AllBookings fetched successfully!",
+      data: bookings
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -124,6 +138,7 @@ const getBookingById = async (
 
 export const BookingController = {
   createBooking,
+  getAllBookings,
   getMyBookings,
   updateBookingStatusByTutor,
   getBookingById,

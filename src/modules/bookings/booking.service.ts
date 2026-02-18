@@ -61,6 +61,16 @@ const getMyBookings = async (userId: string, role: "STUDENT" | "TUTOR") => {
   });
 };
 
+const getAllBookings = async () => {
+  return prisma.booking.findMany({
+    include: {
+      student: true,
+      tutorProfile: { include: { user: true } },
+      slot: true,
+    },
+  });
+};
+
 export const updateBookingStatusByTutor = async (
   bookingId: string,
   tutorProfileId: string,
@@ -89,7 +99,6 @@ export const updateBookingStatusByTutor = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Booking status can no longer be changed");
   }
 
-  // ❌ Tutor cannot cancel after session ended
   if (
     status === BookingStatus.CANCELLED &&
     booking.slot.endTime <= now
@@ -158,6 +167,7 @@ const getBookingById = async (id: string) => {
 
 export const BookingService = {
   createBooking,
+  getAllBookings,
   getMyBookings,
   updateBookingStatusByTutor,
   getBookingById,

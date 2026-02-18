@@ -8,7 +8,7 @@ const router: Router = express.Router();
 router.get("/", TutorController.getAllTutors);
 router.get("/:id", TutorController.getTutorById);
 
-router.post("/create-profile", auth(UserRole.TUTOR), TutorController.createProfile);
-router.put("/me", auth(UserRole.TUTOR), TutorController.updateProfile);
+router.post("/create-profile", auth(UserRole.TUTOR), TutorController.createTutorProfile);
+router.put("/me", auth(UserRole.TUTOR), TutorController.updateTutorProfile);
 
 export const tutorRoutes: Router = router;

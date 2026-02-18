@@ -3,8 +3,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import cors from 'cors';
 import { notFound } from "./middlewares/notFound";
-import { tutorRoutes } from "./modules/tutor/tutor.route";
-import { adminRoutes } from "./modules/admin/admin.route";
+import { tutorRoutes } from "./modules/tutorProfiles/tutor.route";
+import { userRoutes } from "./modules/users/user.route";
 import errorHandler from "./middlewares/globalErrorHandler";
 import { authRoutes } from "./modules/auth/auth.route";
 import { categoryRoutes } from "./modules/categories/category.route";
@@ -21,7 +21,7 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use("/api/admin", adminRoutes)
+app.use("/api/users", userRoutes)
 
 app.use("/api/auth", authRoutes)
 

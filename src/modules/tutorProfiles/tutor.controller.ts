@@ -2,10 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { TutorService } from "./tutor.service";
 
 // Create Tutor Profile
-const createProfile = async (req: Request, res: Response, next: NextFunction) => {
+const createTutorProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id;
-    const profile = await TutorService.createProfile(userId as string, req.body);
+    const profile = await TutorService.createTutorProfile(userId as string, req.body);
    res.status(200).json({
       success: true,
       message: "Tutor profile created successfully!",
@@ -17,10 +17,10 @@ const createProfile = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 // Update Tutor Profile
-const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+const updateTutorProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id;
-    const profile = await TutorService.updateProfile(userId as string, req.body);
+    const profile = await TutorService.updateTutorProfile(userId as string, req.body);
      res.status(200).json({
       success: true,
       message: "Tutor profile updated successfully!",
@@ -62,8 +62,8 @@ const getTutorById = async (req: Request, res: Response, next: NextFunction) => 
 };
 
 export const TutorController = {
-  createProfile,
-  updateProfile,
+  createTutorProfile,
+  updateTutorProfile,
   getAllTutors,
   getTutorById,
 };

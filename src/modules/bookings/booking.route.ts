@@ -10,6 +10,9 @@ router.post(
   BookingController.createBooking
 );
 
+router.get("/", auth(UserRole.ADMIN), BookingController.getAllBookings);
+
+
 // Student / Tutor get own bookings
 router.get(
   "/me",
