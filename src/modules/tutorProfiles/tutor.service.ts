@@ -2,14 +2,15 @@ import { Prisma, UserStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { UserRole } from "../../middlewares/auth";
 import { ApiError } from "../../middlewares/globalErrorHandler";
+import { TutorSortableFields } from "../../types/tutor.type";
 
 export interface TutorProfileData {
-  bio?: string;        
+  bio?: string;
   hourlyRate: number;
   experience: number;
   categoryId: string;
 }
-export type TutorSortableFields = "createdAt" | "hourlyRate" | "rating" | "experience";
+
 
 export type GetAllTutorsParams = {
   search?: string;
@@ -26,12 +27,11 @@ export type GetAllTutorsParams = {
   sortOrder: "asc" | "desc";
 };
 
-
 const createTutorProfile = async (userId: string, data: TutorProfileData) => {
   if (!userId) throw new Error("User not logged in");
 
   const existing = await prisma.tutorProfile.findUnique({ where: { userId } });
-if (existing) throw new ApiError(400, "Profile already exists");
+  if (existing) throw new ApiError(400, "Profile already exists");
 
   return prisma.tutorProfile.create({
     data: {
@@ -72,105 +72,81 @@ const updateTutorProfile = async (userId: string, data: Partial<TutorProfileData
 };
 
 const getAllTutors = async (params: GetAllTutorsParams) => {
-    if (!params.limit || params.limit <= 0) {
-      throw new ApiError(400, "Limit must be a positive integer");
-    }
-
-    const {
-      search,
-      categoryId,
-      minRate,
-      maxRate,
-      minRating,
-      minExperience,
-      availableDate,
-      page,
-      limit,
-      skip,
-      sortBy,
-      sortOrder,
-    } = params;
-
-    const andConditions: Prisma.TutorProfileWhereInput[] = [];
-
-    if (search) {
-      andConditions.push({
-        OR: [
-          { user: { name: { contains: search, mode: "insensitive" } } },
-          { category: { name: { contains: search, mode: "insensitive" } } },
-          { bio: { contains: search, mode: "insensitive" } }
-        ],
-      });
-    }
-
-    if (categoryId) andConditions.push({ categoryId });
-
-    if (minRate !== undefined || maxRate !== undefined) {
-      andConditions.push({
-        hourlyRate: {
-          ...(minRate !== undefined && { gte: minRate }),
-          ...(maxRate !== undefined && { lte: maxRate }),
-        },
-      });
-    }
-
-    // Rating filter
-    if (minRating !== undefined) {
-      andConditions.push({ rating: { gte: minRating } });
-    }
-
-    // Experience filter
-    if (minExperience !== undefined) {
-      andConditions.push({ experience: { gte: minExperience } });
-    }
-
-    // Availability filter
-    if (availableDate) {
-      andConditions.push({
-        availability: {
-          some: {
-            date: new Date(availableDate),
-            isBooked: false,
-          },
-        },
-      });
-    }
-
-    const whereCondition: Prisma.TutorProfileWhereInput = {
-      ...(andConditions.length > 0 && { AND: andConditions }),
-      user: {
-        role: UserRole.TUTOR,
-        status: UserStatus.ACTIVE,
-      },
-    };
-
-    const [tutors, totalTutors] = await Promise.all([
-      prisma.tutorProfile.findMany({
-        take: limit,
-        skip,
-        where: whereCondition,
-        include: {
-          user: true,
-          category: true,
-          availability: true,
-          reviews: true,
-        },
-        orderBy: { [sortBy]: sortOrder },
-      }),
-      prisma.tutorProfile.count({ where: whereCondition }),
-    ]);
-
-    return {
-      tutors,
-      pagination: {
-        totalTutors,
-        page,
-        limit,
-        totalPages: Math.ceil(totalTutors / limit),
-      },
-    };
+  if (!params.limit || params.limit <= 0) {
+    throw new ApiError(400, "Limit must be a positive integer");
   }
 
+  const {
+    search, categoryId, minRate, maxRate,
+    minRating, minExperience, availableDate,
+    page, limit, skip, sortBy, sortOrder,
+  } = params;
+
+  const andConditions: Prisma.TutorProfileWhereInput[] = [];
+
+  if (search) {
+    andConditions.push({
+      OR: [
+        { user: { name: { contains: search, mode: "insensitive" } } },
+        { category: { name: { contains: search, mode: "insensitive" } } },
+        { bio: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (categoryId) andConditions.push({ categoryId });
+
+  if (minRate !== undefined || maxRate !== undefined) {
+    andConditions.push({
+      hourlyRate: {
+        ...(minRate !== undefined && { gte: minRate }),
+        ...(maxRate !== undefined && { lte: maxRate }),
+      },
+    });
+  }
+
+  if (minRating !== undefined) {
+    andConditions.push({ rating: { gte: minRating } });
+  }
+
+  if (minExperience !== undefined) {
+    andConditions.push({ experience: { gte: minExperience } });
+  }
+
+  if (availableDate) {
+    andConditions.push({
+      availability: {
+        some: { date: new Date(availableDate), isBooked: false },
+      },
+    });
+  }
+
+  const whereCondition: Prisma.TutorProfileWhereInput = {
+    ...(andConditions.length > 0 && { AND: andConditions }),
+    user: { role: UserRole.TUTOR, status: UserStatus.ACTIVE },
+  };
+
+  const [tutors, totalTutors] = await Promise.all([
+    prisma.tutorProfile.findMany({
+      take: limit,
+      skip,
+      where: whereCondition,
+      include: { user: true, category: true, availability: true, reviews: true },
+      orderBy: { [sortBy]: sortOrder },
+    }),
+    prisma.tutorProfile.count({ where: whereCondition }),
+  ]);
+
+  return {
+    tutors,
+    pagination: {
+      totalTutors,
+      page,
+      limit,
+      totalPages: Math.ceil(totalTutors / limit),
+    },
+  };
+};
 
 const getTutorById = async (tutorId: string) => {
   return prisma.tutorProfile.findUnique({
@@ -179,9 +155,79 @@ const getTutorById = async (tutorId: string) => {
       user: true,
       category: true,
       availability: true,
-      reviews: true,
+      reviews: {
+        include: {
+          student: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
+};
+
+
+const getTutorStats = async (userId: string) => {
+  const tutorProfile = await prisma.tutorProfile.findUnique({
+    where: { userId },
+    include: {
+      category: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+        },
+      },
+      bookings: {
+        include: {
+          slot: true,
+          student: {
+            select: { id: true, name: true, image: true, email: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      reviews: {
+        include: {
+          student: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      availability: true,
+    },
+  });
+
+  if (!tutorProfile) throw new ApiError(404, "Tutor profile not found");
+
+  const { bookings, reviews, availability } = tutorProfile;
+
+  const completed = bookings.filter((b) => b.status === "COMPLETED");
+  const upcoming  = bookings.filter((b) => ["PENDING", "CONFIRMED"].includes(b.status));
+  const cancelled = bookings.filter((b) => b.status === "CANCELLED");
+
+  const stats = {
+    totalSessions:  bookings.length,
+    upcoming:       upcoming.length,
+    completed:      completed.length,
+    cancelled:      cancelled.length,
+    totalEarnings:  completed.length * tutorProfile.hourlyRate,
+    availableSlots: availability.filter((s) => !s.isBooked).length,
+    rating:         tutorProfile.rating,
+    totalReviews:   tutorProfile.totalReviews,
+  };
+
+  return {
+    stats,
+    tutorProfile,
+    recentBookings: bookings.slice(0, 10),
+    recentReviews:  reviews.slice(0, 5),
+  };
 };
 
 export const tutorService = {
@@ -189,4 +235,5 @@ export const tutorService = {
   updateTutorProfile,
   getAllTutors,
   getTutorById,
+  getTutorStats,
 };

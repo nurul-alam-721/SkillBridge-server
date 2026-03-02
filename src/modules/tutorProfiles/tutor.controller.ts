@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { paginationSortingHelper } from "../../helpers/paginationSortingHelper";
 import { GetAllTutorsParams, tutorService } from "./tutor.service";
+import { TutorSortableFields } from "../../types/tutor.type";
 
-
-// Create Tutor Profile
 const createTutorProfile = async (
   req: Request,
   res: Response,
@@ -47,39 +46,53 @@ const updateTutorProfile = async (
   }
 };
 
-export const getAllTutors = async (req: Request, res: Response) => {
+const getAllTutors = async (req: Request, res: Response) => {
   try {
-    // Parse query parameters safely
-    const search = typeof req.query.search === "string" ? req.query.search : undefined;
-    const categoryId = typeof req.query.categoryId === "string" ? req.query.categoryId : undefined;
-    const minRate = typeof req.query.minRate === "string" ? Number(req.query.minRate) : undefined;
-    const maxRate = typeof req.query.maxRate === "string" ? Number(req.query.maxRate) : undefined;
-    const minRating = typeof req.query.minRating === "string" ? Number(req.query.minRating) : undefined;
-    const minExperience = typeof req.query.minExperience === "string" ? Number(req.query.minExperience) : undefined;
-    const availableDate = typeof req.query.availableDate === "string" ? req.query.availableDate : undefined;
+    const search =
+      typeof req.query.search === "string" ? req.query.search : undefined;
+    const categoryId =
+      typeof req.query.categoryId === "string"
+        ? req.query.categoryId
+        : undefined;
+    const minRate =
+      typeof req.query.minRate === "string"
+        ? Number(req.query.minRate)
+        : undefined;
+    const maxRate =
+      typeof req.query.maxRate === "string"
+        ? Number(req.query.maxRate)
+        : undefined;
+    const minRating =
+      typeof req.query.minRating === "string"
+        ? Number(req.query.minRating)
+        : undefined;
+    const minExperience =
+      typeof req.query.minExperience === "string"
+        ? Number(req.query.minExperience)
+        : undefined;
+    const availableDate =
+      typeof req.query.availableDate === "string"
+        ? req.query.availableDate
+        : undefined;
 
-    // Pagination & Sorting
-    const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelper(
-      req.query as Record<string, unknown>
-    );
+const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelper(
+  req.query as Record<string, unknown>,
+);
 
-    // Build params object
-    const params: GetAllTutorsParams = {
-      search,
-      categoryId,
-      minRate,
-      maxRate,
-      minRating,
-      minExperience,
-      availableDate,
-      page,
-      limit,
-      skip,
-      sortBy,
-      sortOrder,
-    };
-
-    // Call service
+const params: GetAllTutorsParams = {
+  page,
+  limit,
+  skip,
+  sortBy: sortBy as TutorSortableFields,
+  sortOrder,
+  ...(search && { search }),
+  ...(categoryId && { categoryId }),
+  ...(minRate !== undefined && { minRate }),
+  ...(maxRate !== undefined && { maxRate }),
+  ...(minRating !== undefined && { minRating }),
+  ...(minExperience !== undefined && { minExperience }),
+  ...(availableDate && { availableDate }),
+};
     const result = await tutorService.getAllTutors(params);
 
     res.status(200).json({
@@ -95,10 +108,6 @@ export const getAllTutors = async (req: Request, res: Response) => {
     });
   }
 };
-
-
-
-
 
 // Get Single Tutor
 const getTutorById = async (
@@ -119,9 +128,28 @@ const getTutorById = async (
   }
 };
 
+const getTutorStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    const data = await tutorService.getTutorStats(userId as string);
+    res.status(200).json({
+      success: true,
+      message: "Tutor stats fetched successfully!",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const tutorController = {
   createTutorProfile,
   updateTutorProfile,
   getAllTutors,
   getTutorById,
+  getTutorStats,
 };
