@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
+import z from "zod/v3";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL!,
@@ -15,15 +16,21 @@ export const auth = betterAuth({
         type: "string",
         defaultValue: "STUDENT",
         required: false,
+        input: true,
+        validator: {
+          input: z.enum(["STUDENT", "TUTOR"]),
+        },
       },
       phone: {
         type: "string",
         required: false,
+        input: true,
       },
       status: {
         type: "string",
         defaultValue: "ACTIVE",
         required: false,
+        input: false,
       },
     },
   },
@@ -38,11 +45,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
-    requireEmailVerification: true,
-  },
-
-  emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
+    requireEmailVerification: false,
   },
 });

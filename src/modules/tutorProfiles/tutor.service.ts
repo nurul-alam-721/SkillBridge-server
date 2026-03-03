@@ -11,7 +11,6 @@ export interface TutorProfileData {
   categoryId: string;
 }
 
-
 export type GetAllTutorsParams = {
   search?: string;
   categoryId?: string;
@@ -29,7 +28,6 @@ export type GetAllTutorsParams = {
 
 const createTutorProfile = async (userId: string, data: TutorProfileData) => {
   if (!userId) throw new Error("User not logged in");
-
   const existing = await prisma.tutorProfile.findUnique({ where: { userId } });
   if (existing) throw new ApiError(400, "Profile already exists");
 
@@ -41,16 +39,14 @@ const createTutorProfile = async (userId: string, data: TutorProfileData) => {
       experience: data.experience,
       categoryId: data.categoryId,
     },
-    include: {
-      user: true,
-      category: true,
-      availability: true,
-      reviews: true,
-    },
+    include: { user: true, category: true, availability: true, reviews: true },
   });
 };
 
-const updateTutorProfile = async (userId: string, data: Partial<TutorProfileData>) => {
+const updateTutorProfile = async (
+  userId: string,
+  data: Partial<TutorProfileData>,
+) => {
   if (!userId) throw new Error("User not logged in");
 
   const updateData: any = {};
@@ -62,11 +58,23 @@ const updateTutorProfile = async (userId: string, data: Partial<TutorProfileData
   return prisma.tutorProfile.update({
     where: { userId },
     data: updateData,
+    include: { user: true, category: true, availability: true, reviews: true },
+  });
+};
+
+const getMyProfile = async (userId: string) => {
+  return prisma.tutorProfile.findUnique({
+    where: { userId },
     include: {
       user: true,
       category: true,
       availability: true,
-      reviews: true,
+      reviews: {
+        include: {
+          student: { select: { id: true, name: true, image: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 };
@@ -77,9 +85,18 @@ const getAllTutors = async (params: GetAllTutorsParams) => {
   }
 
   const {
-    search, categoryId, minRate, maxRate,
-    minRating, minExperience, availableDate,
-    page, limit, skip, sortBy, sortOrder,
+    search,
+    categoryId,
+    minRate,
+    maxRate,
+    minRating,
+    minExperience,
+    availableDate,
+    page,
+    limit,
+    skip,
+    sortBy,
+    sortOrder,
   } = params;
 
   const andConditions: Prisma.TutorProfileWhereInput[] = [];
@@ -105,13 +122,10 @@ const getAllTutors = async (params: GetAllTutorsParams) => {
     });
   }
 
-  if (minRating !== undefined) {
+  if (minRating !== undefined)
     andConditions.push({ rating: { gte: minRating } });
-  }
-
-  if (minExperience !== undefined) {
+  if (minExperience !== undefined)
     andConditions.push({ experience: { gte: minExperience } });
-  }
 
   if (availableDate) {
     andConditions.push({
@@ -131,7 +145,12 @@ const getAllTutors = async (params: GetAllTutorsParams) => {
       take: limit,
       skip,
       where: whereCondition,
-      include: { user: true, category: true, availability: true, reviews: true },
+      include: {
+        user: true,
+        category: true,
+        availability: true,
+        reviews: true,
+      },
       orderBy: { [sortBy]: sortOrder },
     }),
     prisma.tutorProfile.count({ where: whereCondition }),
@@ -157,9 +176,7 @@ const getTutorById = async (tutorId: string) => {
       availability: true,
       reviews: {
         include: {
-          student: {
-            select: { id: true, name: true, image: true },
-          },
+          student: { select: { id: true, name: true, image: true } },
         },
         orderBy: { createdAt: "desc" },
       },
@@ -167,20 +184,13 @@ const getTutorById = async (tutorId: string) => {
   });
 };
 
-
 const getTutorStats = async (userId: string) => {
   const tutorProfile = await prisma.tutorProfile.findUnique({
     where: { userId },
     include: {
       category: true,
       user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          image: true,
-          phone: true,
-        },
+        select: { id: true, name: true, email: true, image: true, phone: true },
       },
       bookings: {
         include: {
@@ -193,9 +203,7 @@ const getTutorStats = async (userId: string) => {
       },
       reviews: {
         include: {
-          student: {
-            select: { id: true, name: true, image: true },
-          },
+          student: { select: { id: true, name: true, image: true } },
         },
         orderBy: { createdAt: "desc" },
       },
@@ -208,31 +216,34 @@ const getTutorStats = async (userId: string) => {
   const { bookings, reviews, availability } = tutorProfile;
 
   const completed = bookings.filter((b) => b.status === "COMPLETED");
-  const upcoming  = bookings.filter((b) => ["PENDING", "CONFIRMED"].includes(b.status));
+  const upcoming = bookings.filter((b) =>
+    ["PENDING", "CONFIRMED"].includes(b.status),
+  );
   const cancelled = bookings.filter((b) => b.status === "CANCELLED");
 
   const stats = {
-    totalSessions:  bookings.length,
-    upcoming:       upcoming.length,
-    completed:      completed.length,
-    cancelled:      cancelled.length,
-    totalEarnings:  completed.length * tutorProfile.hourlyRate,
+    totalSessions: bookings.length,
+    upcoming: upcoming.length,
+    completed: completed.length,
+    cancelled: cancelled.length,
+    totalEarnings: completed.length * tutorProfile.hourlyRate,
     availableSlots: availability.filter((s) => !s.isBooked).length,
-    rating:         tutorProfile.rating,
-    totalReviews:   tutorProfile.totalReviews,
+    rating: tutorProfile.rating,
+    totalReviews: tutorProfile.totalReviews,
   };
 
   return {
     stats,
     tutorProfile,
     recentBookings: bookings.slice(0, 10),
-    recentReviews:  reviews.slice(0, 5),
+    recentReviews: reviews.slice(0, 5),
   };
 };
 
 export const tutorService = {
   createTutorProfile,
   updateTutorProfile,
+  getMyProfile,
   getAllTutors,
   getTutorById,
   getTutorStats,

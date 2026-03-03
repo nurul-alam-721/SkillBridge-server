@@ -5,15 +5,15 @@ import auth, { UserRole } from "../../middlewares/auth";
 
 const router: Router = express.Router();
 
-router.get("/", tutorController.getAllTutors);
 router.get("/me/stats", auth(UserRole.TUTOR), tutorController.getTutorStats);
-router.get("/:id", tutorController.getTutorById);
-
+router.get("/me", auth(UserRole.TUTOR), tutorController.getMyProfile);
 router.post(
   "/create-profile",
   auth(UserRole.TUTOR),
   tutorController.createTutorProfile,
 );
-router.put("/me", auth(UserRole.TUTOR, UserRole.ADMIN), tutorController.updateTutorProfile);
+router.put("/me", auth(UserRole.TUTOR), tutorController.updateTutorProfile);
+router.get("/", tutorController.getAllTutors);
+router.get("/:id", tutorController.getTutorById);
 
 export const tutorRoutes: Router = router;

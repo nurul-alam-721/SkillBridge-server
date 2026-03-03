@@ -24,7 +24,6 @@ const createTutorProfile = async (
   }
 };
 
-// Update Tutor Profile
 const updateTutorProfile = async (
   req: Request,
   res: Response,
@@ -39,6 +38,26 @@ const updateTutorProfile = async (
     res.status(200).json({
       success: true,
       message: "Tutor profile updated successfully!",
+      data: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getMyProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    const profile = await tutorService.getMyProfile(userId as string);
+    res.status(200).json({
+      success: true,
+      message: profile
+        ? "Tutor profile fetched successfully!"
+        : "No profile found",
       data: profile,
     });
   } catch (error) {
@@ -75,41 +94,40 @@ const getAllTutors = async (req: Request, res: Response) => {
         ? req.query.availableDate
         : undefined;
 
-const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelper(
-  req.query as Record<string, unknown>,
-);
+    const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelper(
+      req.query as Record<string, unknown>,
+    );
 
-const params: GetAllTutorsParams = {
-  page,
-  limit,
-  skip,
-  sortBy: sortBy as TutorSortableFields,
-  sortOrder,
-  ...(search && { search }),
-  ...(categoryId && { categoryId }),
-  ...(minRate !== undefined && { minRate }),
-  ...(maxRate !== undefined && { maxRate }),
-  ...(minRating !== undefined && { minRating }),
-  ...(minExperience !== undefined && { minExperience }),
-  ...(availableDate && { availableDate }),
-};
+    const params: GetAllTutorsParams = {
+      page,
+      limit,
+      skip,
+      sortBy: sortBy as TutorSortableFields,
+      sortOrder,
+      ...(search && { search }),
+      ...(categoryId && { categoryId }),
+      ...(minRate !== undefined && { minRate }),
+      ...(maxRate !== undefined && { maxRate }),
+      ...(minRating !== undefined && { minRating }),
+      ...(minExperience !== undefined && { minExperience }),
+      ...(availableDate && { availableDate }),
+    };
+
     const result = await tutorService.getAllTutors(params);
-
-    res.status(200).json({
-      success: true,
-      message: "Tutors fetched successfully!",
-      ...result,
-    });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Tutors fetched successfully!",
+        ...result,
+      });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: "Getting tutors failed",
-      error,
-    });
+    res
+      .status(400)
+      .json({ success: false, message: "Getting tutors failed", error });
   }
 };
 
-// Get Single Tutor
 const getTutorById = async (
   req: Request,
   res: Response,
@@ -118,11 +136,13 @@ const getTutorById = async (
   try {
     const { id } = req.params;
     const tutor = await tutorService.getTutorById(id as string);
-    res.status(200).json({
-      success: true,
-      message: "Tutor fetched successfully!",
-      data: tutor,
-    });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Tutor fetched successfully!",
+        data: tutor,
+      });
   } catch (error) {
     next(error);
   }
@@ -136,11 +156,13 @@ const getTutorStats = async (
   try {
     const userId = req.user?.id;
     const data = await tutorService.getTutorStats(userId as string);
-    res.status(200).json({
-      success: true,
-      message: "Tutor stats fetched successfully!",
-      data,
-    });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Tutor stats fetched successfully!",
+        data,
+      });
   } catch (error) {
     next(error);
   }
@@ -149,6 +171,7 @@ const getTutorStats = async (
 export const tutorController = {
   createTutorProfile,
   updateTutorProfile,
+  getMyProfile,
   getAllTutors,
   getTutorById,
   getTutorStats,

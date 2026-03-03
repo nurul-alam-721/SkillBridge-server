@@ -5,7 +5,6 @@ export enum UserRole {
     STUDENT = "STUDENT",
     TUTOR = "TUTOR",
     ADMIN = "ADMIN",
-
 }
 
 declare global {
@@ -27,20 +26,13 @@ const auth = (...roles: UserRole[]) => {
         try {
             const session = await betterAuth.api.getSession({
                 headers: req.headers as any
-            })
+            });
 
             if (!session) {
                 return res.status(401).json({
                     success: false,
                     message: "You are not authorized!"
-                })
-            }
-
-            if (!session.user.emailVerified) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Email verification required. Please verfiy your email!"
-                })
+                });
             }
 
             req.user = {
@@ -49,20 +41,19 @@ const auth = (...roles: UserRole[]) => {
                 name: session.user.name,
                 role: session.user.role as string,
                 emailVerified: session.user.emailVerified
-            }
+            };
 
             if (roles.length && !roles.includes(req.user.role as UserRole)) {
                 return res.status(403).json({
                     success: false,
-                    message: "Forbidden! You don't have permission to access this resources!"
-                })
+                    message: "Forbidden! You don't have permission to access this resource!"
+                });
             }
 
-            next()
+            next();
         } catch (err) {
             next(err);
         }
-
     }
 };
 
