@@ -11,6 +11,7 @@ import { categoryRoutes } from "./modules/categories/category.route";
 import { AvailabilityRoutes } from "./modules/availabilitySlot/availability.route";
 import { bookingRoutes } from "./modules/bookings/booking.route";
 import { reviewRoutes } from "./modules/reviews/review.route";
+import { AdminRoutes } from "./modules/admin/admin.route";
 
 const app: Application = express();
 
@@ -34,6 +35,8 @@ app.use("/api", AvailabilityRoutes);
 app.use("/api/bookings", bookingRoutes);
 
 app.use("/api/reviews", reviewRoutes);
+
+app.use("/api/", AdminRoutes);
 
     
 app.get("/", (req, res) => {
