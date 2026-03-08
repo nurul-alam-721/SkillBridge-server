@@ -25,18 +25,7 @@ const createBooking = async (
   }
 };
 
-const getAllBookings = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const bookings = await BookingService.getAllBookings();
-    res.status(200).json({
-      success: true,
-      message: "AllBookings fetched successfully!",
-      data: bookings
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+
 
 // Student or Tutor: get own bookings
 const getMyBookings = async (
@@ -138,7 +127,6 @@ const getBookingById = async (
 
 export const BookingController = {
   createBooking,
-  getAllBookings,
   getMyBookings,
   updateBookingStatusByTutor,
   getBookingById,

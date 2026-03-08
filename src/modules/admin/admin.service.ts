@@ -16,15 +16,12 @@ const getStats = async () => {
     ] = await Promise.all([
       tx.user.count({ where: { role: "STUDENT" } }),
       tx.user.count({ where: { role: "TUTOR" } }),
-
       tx.booking.count(),
       tx.booking.count({ where: { status: "PENDING" } }),
       tx.booking.count({ where: { status: "CONFIRMED" } }),
       tx.booking.count({ where: { status: "COMPLETED" } }),
       tx.booking.count({ where: { status: "CANCELLED" } }),
-
       tx.category.count(),
-
       tx.booking.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -39,7 +36,6 @@ const getStats = async () => {
           slot: { select: { startTime: true, endTime: true } },
         },
       }),
-
       tx.booking.findMany({
         where: { status: "COMPLETED" },
         include: {
@@ -72,4 +68,20 @@ const getStats = async () => {
   });
 };
 
-export const AdminService = { getStats };
+const getAllBookings = async () => {
+  return await prisma.booking.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      student: { select: { id: true, name: true, email: true, image: true } },
+      tutorProfile: {
+        include: {
+          user: { select: { name: true, email: true } },
+          category: { select: { name: true } },
+        },
+      },
+      slot: { select: { startTime: true, endTime: true } },
+    },
+  });
+};
+
+export const AdminService = { getStats, getAllBookings };

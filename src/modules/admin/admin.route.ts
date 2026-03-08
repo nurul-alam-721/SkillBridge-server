@@ -4,12 +4,12 @@ import auth, { UserRole } from "../../middlewares/auth";
 
 const router: Router = express.Router();
 
+router.get("/admin/stats", auth(UserRole.ADMIN), AdminController.getStats);
+
 router.get(
-  "/admin/stats",
+  "/admin/bookings",
   auth(UserRole.ADMIN),
-  AdminController.getStats
+  AdminController.getAllBookings,
 );
-
-
 
 export const AdminRoutes = router;

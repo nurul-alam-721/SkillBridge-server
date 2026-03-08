@@ -61,15 +61,6 @@ const getMyBookings = async (userId: string, role: "STUDENT" | "TUTOR") => {
   });
 };
 
-const getAllBookings = async () => {
-  return prisma.booking.findMany({
-    include: {
-      student: true,
-      tutorProfile: { include: { user: true } },
-      slot: true,
-    },
-  });
-};
 
 export const updateBookingStatusByTutor = async (
   bookingId: string,
@@ -167,7 +158,6 @@ const getBookingById = async (id: string) => {
 
 export const BookingService = {
   createBooking,
-  getAllBookings,
   getMyBookings,
   updateBookingStatusByTutor,
   getBookingById,
