@@ -1,19 +1,11 @@
 import { prisma } from "../../lib/prisma";
 
-export type UserStatus = "ACTIVE" | "BANNED";
-
 const getAllUsers = async () => {
   return prisma.user.findMany({
     select: { id: true, name: true, email: true, role: true, status: true },
   });
 };
 
-const updateUserStatus = async (id: string, status: UserStatus) => {
-  return prisma.user.update({
-    where: { id },
-    data: { status },
-  });
-};
 
 
 type UpdateOwnProfilePayload = {
@@ -46,6 +38,5 @@ const updateOwnProfile = async (
 
 export const userService = {
   getAllUsers,
-  updateUserStatus,
   updateOwnProfile
 };

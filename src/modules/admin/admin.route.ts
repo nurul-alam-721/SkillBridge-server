@@ -11,5 +11,12 @@ router.get(
   auth(UserRole.ADMIN),
   AdminController.getAllBookings,
 );
+router.get("/admin/users", auth(UserRole.ADMIN), AdminController.getAllUsers);
+
+router.patch(
+  "/admin/users/:id/status",
+  auth(UserRole.ADMIN),
+  AdminController.updateUserStatus,
+);
 
 export const AdminRoutes = router;

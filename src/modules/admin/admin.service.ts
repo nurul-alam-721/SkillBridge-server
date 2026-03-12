@@ -1,5 +1,7 @@
 import { prisma } from "../../lib/prisma";
 
+export type UserStatus = "ACTIVE" | "BANNED";
+
 const getStats = async () => {
   return await prisma.$transaction(async (tx) => {
     const [
@@ -84,4 +86,27 @@ const getAllBookings = async () => {
   });
 };
 
-export const AdminService = { getStats, getAllBookings };
+const getAllUsers = async () => {
+  return await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      phone: true,
+      role: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+};
+
+const updateUserStatus = async (id: string, status: UserStatus) => {
+  return prisma.user.update({
+    where: { id },
+    data: { status },
+  });
+};
+
+export const AdminService = { getStats, getAllBookings, getAllUsers, updateUserStatus };
