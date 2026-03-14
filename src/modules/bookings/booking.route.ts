@@ -11,7 +11,6 @@ router.post(
 );
 
 
-// Student / Tutor get own bookings
 router.get(
   "/me",
   auth(UserRole.STUDENT, UserRole.TUTOR),
@@ -24,11 +23,11 @@ router.put(
   BookingController.updateBookingStatusByTutor
 );
 
-// Get single booking
 router.get(
   "/:id",
   auth(UserRole.STUDENT, UserRole.TUTOR),
   BookingController.getBookingById
 );
+
 
 export const bookingRoutes = router;
